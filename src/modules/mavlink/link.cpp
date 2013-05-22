@@ -110,7 +110,7 @@ mavlink_system_t mavlink_system = {
 mavlink_channel_t chan = MAVLINK_COMM_0;
 
 /* XXX probably should be in a header... */
-extern pthread_t receive_start(int uart);
+extern "C" pthread_t receive_start(int uart);
 
 /* Allocate storage space for waypoints */
 static mavlink_wpm_storage wpm_s;

@@ -85,6 +85,8 @@ struct mavlink_subscriptions {
 	int home_sub;
 };
 
+__BEGIN_DECLS
+
 extern struct mavlink_subscriptions mavlink_subs;
 
 /** Global position */
@@ -104,3 +106,5 @@ extern struct actuator_armed_s armed;
 
 /** Worker thread starter */
 extern pthread_t uorb_receive_start(void);
+
+__END_DECLS

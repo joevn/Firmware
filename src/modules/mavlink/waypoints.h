@@ -39,8 +39,7 @@
  * MAVLink waypoint protocol definition (BSD-relicensed).
  */
 
-#ifndef WAYPOINTS_H_
-#define WAYPOINTS_H_
+#pragma once
 
 /* This assumes you have the mavlink headers on your include path
  or in the same folder as this source file */
@@ -88,6 +87,7 @@ enum MAVLINK_WPM_CODES {
 #define MAVLINK_WPM_SETPOINT_DELAY_DEFAULT 1000000           ///< When to send a new setpoint
 #define MAVLINK_WPM_PROTOCOL_DELAY_DEFAULT 40000
 
+__BEGIN_DECLS
 
 struct mavlink_wpm_storage {
 	mavlink_mission_item_t waypoints[MAVLINK_WPM_MAX_WP_COUNT];      ///< Currently active waypoints
@@ -128,4 +128,4 @@ extern void mavlink_missionlib_current_waypoint_changed(uint16_t index, float pa
 		float param2, float param3, float param4, float param5_lat_x,
 		float param6_lon_y, float param7_alt_z, uint8_t frame, uint16_t command);
 
-#endif /* WAYPOINTS_H_ */
+__END_DECLS

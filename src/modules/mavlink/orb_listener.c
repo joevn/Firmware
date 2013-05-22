@@ -56,7 +56,7 @@
 #include <stdlib.h>
 #include <poll.h>
 
-#include <mavlink/mavlink_log.h>
+#include "log.h"
 
 #include "waypoints.h"
 #include "orb_topics.h"

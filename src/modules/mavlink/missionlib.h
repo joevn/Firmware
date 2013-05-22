@@ -41,6 +41,8 @@
 
 #include <v1.0/common/mavlink.h>
 
+__BEGIN_DECLS
+
 //extern void	mavlink_wpm_send_message(mavlink_message_t *msg);
 //extern void	mavlink_wpm_send_gcs_string(const char *string);
 //extern uint64_t	mavlink_wpm_get_system_timestamp(void);
@@ -50,3 +52,5 @@ extern uint64_t	mavlink_missionlib_get_system_timestamp(void);
 extern void	mavlink_missionlib_current_waypoint_changed(uint16_t index, float param1,
 		float param2, float param3, float param4, float param5_lat_x,
 		float param6_lon_y, float param7_alt_z, uint8_t frame, uint16_t command);
+
+__END_DECLS

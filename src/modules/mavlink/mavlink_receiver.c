@@ -64,7 +64,6 @@
 
 #include <systemlib/param/param.h>
 #include <systemlib/systemlib.h>
-#include <mavlink/mavlink_log.h>
 
 #include "waypoints.h"
 #include "orb_topics.h"
@@ -72,6 +71,7 @@
 #include "mavlink_hil.h"
 #include "mavlink_parameters.h"
 #include "util.h"
+#include "log.h"
 
 /* XXX should be in a header somewhere */
 pthread_t receive_start(int uart);

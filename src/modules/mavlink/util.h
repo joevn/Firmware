@@ -39,8 +39,10 @@
 
 #pragma once
 
+__BEGIN_DECLS
+
 /** MAVLink communications channel */
-extern uint8_t chan;
+extern mavlink_channel_t chan;
 
 /** Shutdown marker */
 extern volatile bool thread_should_exit;
@@ -52,3 +54,5 @@ extern mavlink_wpm_storage *wpm;
  * Translate the custom state into standard mavlink modes and state.
  */
 extern void get_mavlink_mode_and_state(uint8_t *mavlink_state, uint8_t *mavlink_mode);
+
+__END_DECLS

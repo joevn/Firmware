@@ -60,6 +60,12 @@ extern mavlink_system_t mavlink_system;
 extern int mavlink_missionlib_send_message(mavlink_message_t *msg);
 extern int mavlink_missionlib_send_gcs_string(const char *string);
 
+
+/* define MAVLink specific parameters */
+PARAM_DEFINE_INT32(MAV_SYS_ID, 1);
+PARAM_DEFINE_INT32(MAV_COMP_ID, 50);
+PARAM_DEFINE_INT32(MAV_TYPE, MAV_TYPE_FIXED_WING);
+
 /**
  * If the queue index is not at 0, the queue sending
  * logic will send parameters from the current index

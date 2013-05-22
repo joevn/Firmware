@@ -39,6 +39,8 @@
  * @author Lorenz Meier <lm@inf.ethz.ch>
  */
 
+#pragma once
+
 /* This assumes you have the mavlink headers on your include path
  or in the same folder as this source file */
 
@@ -46,6 +48,8 @@
 #include <v1.0/mavlink_types.h>
 #include <stdbool.h>
 #include <systemlib/param/param.h>
+
+__BEGIN_DECLS
 
 /**
  * Handle parameter related messages.
@@ -102,3 +106,5 @@ int mavlink_pm_queued_send(void);
  * @see 		mavlink_pm_queued_send()
  */
 void mavlink_pm_start_queued_send(void);
+
+__END_DECLS

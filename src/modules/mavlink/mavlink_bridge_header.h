@@ -39,9 +39,7 @@
  * @author Lorenz Meier <lm@inf.ethz.ch>
  */
 
-/* MAVLink adapter header */
-#ifndef MAVLINK_BRIDGE_HEADER_H
-#define MAVLINK_BRIDGE_HEADER_H
+#pragma once
 
 #define MAVLINK_USE_CONVENIENCE_FUNCTIONS
 
@@ -54,6 +52,7 @@
 #include <v1.0/mavlink_types.h>
 #include <unistd.h>
 
+__BEGIN_DECLS
 
 /* Struct that stores the communication settings of this system.
    you can also define / alter these settings elsewhere, as long
@@ -73,9 +72,9 @@ extern mavlink_system_t mavlink_system;
  * @param chan MAVLink channel to use, usually MAVLINK_COMM_0 = UART0
  * @param ch Character to send
  */
-extern void mavlink_send_uart_bytes(mavlink_channel_t chan, uint8_t *ch, int length);
+void mavlink_send_uart_bytes(mavlink_channel_t chan, const uint8_t *ch, int length);
 
 mavlink_status_t *mavlink_get_channel_status(uint8_t chan);
 mavlink_message_t *mavlink_get_channel_buffer(uint8_t chan);
 
-#endif /* MAVLINK_BRIDGE_HEADER_H */
+__END_DECLS

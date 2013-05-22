@@ -62,7 +62,6 @@
 
 #include <systemlib/param/param.h>
 #include <systemlib/systemlib.h>
-#include <mavlink/mavlink_log.h>
 
 #include "waypoints.h"
 #include "orb_topics.h"
@@ -71,6 +70,7 @@
 #include "util.h"
 #include "waypoints.h"
 #include "mavlink_parameters.h"
+#include "log.h"
 
 static uint8_t missionlib_msg_buf[MAVLINK_MAX_PACKET_LEN];
 

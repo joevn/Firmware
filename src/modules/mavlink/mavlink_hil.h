@@ -39,6 +39,8 @@
 
 #pragma once
 
+__BEGIN_DECLS
+
 extern bool mavlink_hil_enabled;
 
 extern struct vehicle_global_position_s hil_global_pos;
@@ -59,3 +61,5 @@ extern orb_advert_t pub_hil_gps;
  *			redundant.
  */
 extern int set_hil_on_off(bool hil_enabled);
+
+__END_DECLS

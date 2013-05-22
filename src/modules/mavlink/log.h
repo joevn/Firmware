@@ -33,7 +33,7 @@
  ****************************************************************************/
 
 /**
- * @file mavlink_log.h
+ * @file log.h
  * MAVLink text logging.
  *
  * @author Lorenz Meier <lm@inf.ethz.ch>
@@ -41,20 +41,23 @@
 
 #pragma once
 
-#include <sys/ioctl.h>		/* for _IOC */
-#ifndef _IOC
-#error no _IOC
-#endif
+/*
+ * IOCTL interface for sending log messages.
+ */
+#include <sys/ioctl.h>
+#include <mavlink/mavlink_log.h>
 
 /**
- * The mavlink log device node; must be opened before messages
- * can be logged.
+ * The maximum string length supported.
  */
-#define MAVLINK_LOG_DEVICE			"/dev/mavlink"
+#define MAVLINK_LOG_MAXLEN			50
 
-#define MAVLINK_IOC_SEND_TEXT_INFO		_IOC(0x1100, 1)
-#define MAVLINK_IOC_SEND_TEXT_CRITICAL		_IOC(0x1100, 2)
-#define MAVLINK_IOC_SEND_TEXT_EMERGENCY		_IOC(0x1100, 3)
+/*
+ * The va_args implementation here is not beautiful, but obviously we run into the same issues
+ * the GCC devs saw, and are using their solution:
+ *
+ * http://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
+ */
 
 /**
  * Send a mavlink emergency message.
@@ -80,9 +83,32 @@
  */
 #define mavlink_log_info(_fd, _text, ...)		mavlink_vasprintf(_fd, MAVLINK_IOC_SEND_TEXT_INFO, _text, ##__VA_ARGS__);
 
+struct mavlink_logmessage {
+	char text[MAVLINK_LOG_MAXLEN + 1];
+	unsigned char severity;
+};
+
+struct mavlink_logbuffer {
+	unsigned int start;
+	// unsigned int end;
+	unsigned int size;
+	int count;
+	struct mavlink_logmessage *elems;
+};
+
 __BEGIN_DECLS
 
-__EXPORT void mavlink_vasprintf(int _fd, int severity, const char *fmt, ...);
+void mavlink_logbuffer_init(struct mavlink_logbuffer *lb, int size);
+
+int mavlink_logbuffer_is_full(struct mavlink_logbuffer *lb);
+
+int mavlink_logbuffer_is_empty(struct mavlink_logbuffer *lb);
+
+void mavlink_logbuffer_write(struct mavlink_logbuffer *lb, const struct mavlink_logmessage *elem);
+
+int mavlink_logbuffer_read(struct mavlink_logbuffer *lb, struct mavlink_logmessage *elem);
+
+void mavlink_logbuffer_vasprintf(struct mavlink_logbuffer *lb, int severity, const char *fmt, ...);
 
 __END_DECLS
 

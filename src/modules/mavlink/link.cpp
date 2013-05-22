@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2012,2013 PX4 Development Team. All rights reserved.
  *   Author: Lorenz Meier <lm@inf.ethz.ch>
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,13 +33,15 @@
  ****************************************************************************/
 
 /**
- * @file mavlink.c
- * MAVLink 1.0 protocol implementation.
+ * @file link.cpp
+ *
+ * MAVLink 1.0 protocol implementation - link creation.
  *
  * @author Lorenz Meier <lm@inf.ethz.ch>
  */
 
 #include <nuttx/config.h>
+
 #include <unistd.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -61,10 +63,11 @@
 #include <stdlib.h>
 #include <poll.h>
 
+#include <drivers/device/device.h>
+
 #include <systemlib/param/param.h>
 #include <systemlib/systemlib.h>
 #include <systemlib/err.h>
-#include <mavlink/mavlink_log.h>
 
 #include "waypoints.h"
 #include "orb_topics.h"
@@ -73,15 +76,14 @@
 #include "util.h"
 #include "waypoints.h"
 #include "mavlink_parameters.h"
+#include "log.h"
 
-/* define MAVLink specific parameters */
-PARAM_DEFINE_INT32(MAV_SYS_ID, 1);
-PARAM_DEFINE_INT32(MAV_COMP_ID, 50);
-PARAM_DEFINE_INT32(MAV_TYPE, MAV_TYPE_FIXED_WING);
+/* XXX NuttX doesn't define ERROR for C++ */
+#define ERROR -1
 
+__BEGIN_DECLS
 __EXPORT int mavlink_main(int argc, char *argv[]);
-
-static int mavlink_thread_main(int argc, char *argv[]);
+__END_DECLS
 
 /* thread state */
 volatile bool thread_should_exit = false;
@@ -104,8 +106,8 @@ mavlink_system_t mavlink_system = {
 	0
 }; // System ID, 1-255, Component/Subsystem ID, 1-255
 
-/* XXX not widely used */
-uint8_t chan = MAVLINK_COMM_0;
+/* XXX should not be widely used */
+mavlink_channel_t chan = MAVLINK_COMM_0;
 
 /* XXX probably should be in a header... */
 extern pthread_t receive_start(int uart);
@@ -348,9 +350,7 @@ int set_mavlink_interval_limit(struct mavlink_subscriptions *subs, int mavlink_m
 
 static int	mavlink_dev_ioctl(struct file *filep, int cmd, unsigned long arg);
 
-static const struct file_operations mavlink_fops = {
-	.ioctl = mavlink_dev_ioctl
-};
+static struct file_operations mavlink_fops;
 
 static int
 mavlink_dev_ioctl(struct file *filep, int cmd, unsigned long arg)
@@ -479,7 +479,7 @@ int mavlink_open_uart(int baud, const char *uart_name, struct termios *uart_conf
 }
 
 void
-mavlink_send_uart_bytes(mavlink_channel_t channel, uint8_t *ch, int length)
+mavlink_send_uart_bytes(mavlink_channel_t channel, const uint8_t *ch, int length)
 {
 	write(uart, ch, (size_t)(sizeof(uint8_t) * length));
 }
@@ -548,7 +548,7 @@ int mavlink_thread_main(int argc, char *argv[])
 	mavlink_logbuffer_init(&lb, 5);
 
 	int ch;
-	char *device_name = "/dev/ttyS1";
+	const char *device_name = "/dev/ttyS1";
 	baudrate = 57600;
 
 	/* work around some stupidity in task_create's argv handling */
@@ -602,6 +602,7 @@ int mavlink_thread_main(int argc, char *argv[])
 		err(1, "could not open %s", device_name);
 
 	/* create the device node that's used for sending text log messages, etc. */
+	mavlink_fops.ioctl = mavlink_dev_ioctl;
 	register_driver(MAVLINK_LOG_DEVICE, &mavlink_fops, 0666, NULL);
 
 	/* Initialize system properties */

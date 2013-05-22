@@ -45,6 +45,7 @@
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/topics/actuator_controls.h>
 #include <systemlib/systemlib.h>
+#include <systemlib/err.h>
 #include <drivers/drv_hrt.h>
 #include <mavlink/mavlink_log.h>
 

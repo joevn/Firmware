@@ -1,7 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
- *   Author: @author Example User <mail@example.com>
+ *   Copyright (c) 2012, 2013 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,13 +34,20 @@
 /**
  * @file px4_daemon_app.c
  * daemon application example for PX4 autopilot
+<<<<<<< HEAD
+=======
+ * 
+ * @author Example User <mail@example.com>
+>>>>>>> upstream/master
  */
 
 #include <nuttx/config.h>
+#include <nuttx/sched.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <poll.h>
 
+<<<<<<< HEAD
 #include <uORB/uORB.h>
 #include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/vehicle_attitude.h>
@@ -49,6 +55,10 @@
 #include <systemlib/perf_counter.h>
 #include <systemlib/systemlib.h>
 #include <systemlib/param/param.h>
+=======
+#include <systemlib/systemlib.h>
+#include <systemlib/err.h>
+>>>>>>> upstream/master
 
 static bool thread_should_exit = false;		/**< daemon exit flag */
 static bool thread_running = false;		/**< daemon status flag */
@@ -58,7 +68,10 @@ static int daemon_task;				/**< Handle of daemon task / thread */
  * daemon management function.
  */
 __EXPORT int px4_daemon_app_main(int argc, char *argv[]);
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/master
 
 /**
  * Mainloop of daemon.
@@ -74,9 +87,14 @@ static void
 usage(const char *reason)
 {
 	if (reason)
+<<<<<<< HEAD
 		fprintf(stderr, "%s\n", reason);
 	fprintf(stderr, "usage: daemon {start|stop|status} [-p <additional params>]\n\n");
 	exit(1);
+=======
+		warnx("%s\n", reason);
+	errx(1, "usage: daemon {start|stop|status} [-p <additional params>]\n\n");
+>>>>>>> upstream/master
 }
 
 /**
@@ -95,7 +113,11 @@ int px4_daemon_app_main(int argc, char *argv[])
 	if (!strcmp(argv[1], "start")) {
 
 		if (thread_running) {
+<<<<<<< HEAD
 			printf("daemon already running\n");
+=======
+			warnx("daemon already running\n");
+>>>>>>> upstream/master
 			/* this is not an error */
 			exit(0);
 		}
@@ -117,9 +139,15 @@ int px4_daemon_app_main(int argc, char *argv[])
 
 	if (!strcmp(argv[1], "status")) {
 		if (thread_running) {
+<<<<<<< HEAD
 			printf("\tdaemon app is running\n");
 		} else {
 			printf("\tdaemon app not started\n");
+=======
+			warnx("\trunning\n");
+		} else {
+			warnx("\tnot started\n");
+>>>>>>> upstream/master
 		}
 		exit(0);
 	}
@@ -130,6 +158,7 @@ int px4_daemon_app_main(int argc, char *argv[])
 
 int px4_daemon_thread_main(int argc, char *argv[]) {
 
+<<<<<<< HEAD
 	printf("Hello Sky!\n");
 
 		/* subscribe to sensor_combined topic */
@@ -195,6 +224,20 @@ int px4_daemon_thread_main(int argc, char *argv[]) {
 				 */
 			}
 		}
+=======
+	warnx("[daemon] starting\n");
+
+	thread_running = true;
+
+	while (!thread_should_exit) {
+		warnx("Hello daemon!\n");
+		sleep(10);
+	}
+
+	warnx("[daemon] exiting.\n");
+
+	thread_running = false;
+>>>>>>> upstream/master
 
 		return 0;
 }

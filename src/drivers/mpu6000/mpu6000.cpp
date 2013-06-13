@@ -378,13 +378,13 @@ MPU6000::init()
 	up_udelay(1000);
 
 	// SAMPLE RATE
-	write_reg(MPUREG_SMPLRT_DIV, 0x04);     // Sample rate = 200Hz    Fsample= 1Khz/(4+1) = 200Hz
+	write_reg(MPUREG_SMPLRT_DIV, 0x00);     // Sample rate = 1000Hz    Fsample= 1Khz/(0+1) = 1000Hz
 	usleep(1000);
 
 	// FS & DLPF   FS=2000 deg/s, DLPF = 20Hz (low pass filter)
 	// was 90 Hz, but this ruins quality and does not improve the
 	// system response
-	_set_dlpf_filter(20);
+	_set_dlpf_filter(256);
 	usleep(1000);
 	// Gyro scale 2000 deg/s ()
 	write_reg(MPUREG_GYRO_CONFIG, BITS_FS_2000DPS);
@@ -831,7 +831,8 @@ MPU6000::start()
 	/* make sure we are stopped first */
 	stop();
 
-	/* start polling at the specified rate */
+	/* start polling at the specified rate _call_interval = 2000*/
+	_call_interval = 400; // 2.5 kHz
 	hrt_call_every(&_call, 1000, _call_interval, (hrt_callout)&MPU6000::measure_trampoline, this);
 }
 
@@ -880,6 +881,19 @@ MPU6000::measure()
 		int16_t		gyro_y;
 		int16_t		gyro_z;
 	} report;
+	struct Report32 {
+			int32_t		accel_x;
+			int32_t		accel_y;
+			int32_t		accel_z;
+			int32_t		gyro_x;
+			int32_t		gyro_y;
+			int32_t		gyro_z;
+		};
+
+	static struct Report dataBuf[5]; // sampling at 2500 hz, averaging 5 samples to 500 Hz
+	static struct Report32 dataAvg;
+	static uint16_t avgIdx = 0;
+	static uint16_t firstTime = 1;
 
 	/* start measuring */
 	perf_begin(_sample_perf);
@@ -897,16 +911,68 @@ MPU6000::measure()
 	/*
 	 * Convert from big to little endian
 	 */
+	// Average the data here
+	{
+		struct Report oldest;
 
-	report.accel_x = int16_t_from_bytes(mpu_report.accel_x);
-	report.accel_y = int16_t_from_bytes(mpu_report.accel_y);
-	report.accel_z = int16_t_from_bytes(mpu_report.accel_z);
+		memcpy(&oldest,&dataBuf[avgIdx],sizeof(oldest)); // oldest data is that which is about to be overwritten
+
+		// newest data from report
+		dataBuf[avgIdx].accel_x = int16_t_from_bytes(mpu_report.accel_x);
+		dataBuf[avgIdx].accel_y = int16_t_from_bytes(mpu_report.accel_y);
+		dataBuf[avgIdx].accel_z = int16_t_from_bytes(mpu_report.accel_z);
+
+		dataBuf[avgIdx].gyro_x = int16_t_from_bytes(mpu_report.gyro_x);
+		dataBuf[avgIdx].gyro_y = int16_t_from_bytes(mpu_report.gyro_y);
+		dataBuf[avgIdx].gyro_z = int16_t_from_bytes(mpu_report.gyro_z);
+
+		// moving average is current value + newest - oldest
+		dataAvg.accel_x = dataAvg.accel_x + dataBuf[avgIdx].accel_x - oldest.accel_x;
+		dataAvg.accel_y = dataAvg.accel_y + dataBuf[avgIdx].accel_y - oldest.accel_y;
+		dataAvg.accel_z = dataAvg.accel_z + dataBuf[avgIdx].accel_z - oldest.accel_z;
+
+		dataAvg.gyro_x = dataAvg.gyro_x + dataBuf[avgIdx].gyro_x - oldest.gyro_x;
+		dataAvg.gyro_y = dataAvg.gyro_y + dataBuf[avgIdx].gyro_y - oldest.gyro_y;
+		dataAvg.gyro_z = dataAvg.gyro_z + dataBuf[avgIdx].gyro_z - oldest.gyro_z;
+
+		avgIdx++;
+		if(avgIdx >= 5)
+		{
+			if(firstTime) // get average of 5 values to initialize recursive filter
+			{
+				firstTime = 0;
+				dataAvg.accel_x = dataAvg.accel_y = dataAvg.accel_z = 0;
+				dataAvg.gyro_x = dataAvg.gyro_y = dataAvg.gyro_z = 0;
+				for(uint16_t i=0;i<5;i++)
+				{
+					dataAvg.accel_x += dataBuf[i].accel_x;
+					dataAvg.accel_y += dataBuf[i].accel_y;
+					dataAvg.accel_z += dataBuf[i].accel_z;
+
+					dataAvg.gyro_x += dataBuf[i].gyro_x;
+					dataAvg.gyro_y += dataBuf[i].gyro_y;
+					dataAvg.gyro_z += dataBuf[i].gyro_z;
+				}
+
+			}
+			avgIdx = 0;
+		}
+		else
+			return;
+
+	}
+
+	report.accel_x = dataAvg.accel_x/5;//int16_t_from_bytes(mpu_report.accel_x);
+	report.accel_y = dataAvg.accel_y/5;//int16_t_from_bytes(mpu_report.accel_y);
+	report.accel_z = dataAvg.accel_z/5;//int16_t_from_bytes(mpu_report.accel_z);
 
 	report.temp = int16_t_from_bytes(mpu_report.temp);
 
-	report.gyro_x = int16_t_from_bytes(mpu_report.gyro_x);
-	report.gyro_y = int16_t_from_bytes(mpu_report.gyro_y);
-	report.gyro_z = int16_t_from_bytes(mpu_report.gyro_z);
+	report.gyro_x = dataAvg.gyro_x/5;//int16_t_from_bytes(mpu_report.gyro_x);
+	report.gyro_y = dataAvg.gyro_y/5;//int16_t_from_bytes(mpu_report.gyro_y);
+	report.gyro_z = dataAvg.gyro_z/5;//int16_t_from_bytes(mpu_report.gyro_z);
+
+
 
 	/*
 	 * Swap axes and negate y
@@ -975,15 +1041,16 @@ MPU6000::measure()
 	_gyro_report.temperature_raw = report.temp;
 	_gyro_report.temperature = (report.temp) / 361.0f + 35.0f;
 
-	/* notify anyone waiting for data */
-	poll_notify(POLLIN);
-	_gyro->parent_poll_notify();
 
-	/* and publish for subscribers */
-	orb_publish(ORB_ID(sensor_accel), _accel_topic, &_accel_report);
-	if (_gyro_topic != -1) {
-		orb_publish(ORB_ID(sensor_gyro), _gyro_topic, &_gyro_report);
-	}
+		/* notify anyone waiting for data */
+		poll_notify(POLLIN);
+		_gyro->parent_poll_notify();
+
+		/* and publish for subscribers */
+		orb_publish(ORB_ID(sensor_accel), _accel_topic, &_accel_report);
+		if (_gyro_topic != -1) {
+			orb_publish(ORB_ID(sensor_gyro), _gyro_topic, &_gyro_report);
+		}
 
 	/* stop measuring */
 	perf_end(_sample_perf);

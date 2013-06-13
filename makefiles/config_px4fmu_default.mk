@@ -61,6 +61,7 @@ MODULES		+= modules/gpio_led
 #
 # Estimation modules (EKF / other filters)
 #
+MODULES		+= modules/attitude_estimator_madgwick
 MODULES		+= modules/attitude_estimator_ekf
 MODULES		+= modules/position_estimator_mc
 MODULES		+= modules/position_estimator
@@ -104,7 +105,7 @@ LIBRARIES	+= modules/mathlib/CMSIS
 
 # Tutorial code from
 # https://pixhawk.ethz.ch/px4/dev/daemon
-#MODULES		+= examples/px4_daemon_app
+MODULES		+= examples/px4_daemon_app
 
 # Tutorial code from
 # https://pixhawk.ethz.ch/px4/dev/debug_values

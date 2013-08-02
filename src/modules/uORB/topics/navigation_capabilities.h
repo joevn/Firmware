@@ -1,8 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2008-2013 PX4 Development Team. All rights reserved.
- *   Author: Samuel Zihlmann <samuezih@ee.ethz.ch>
- *   		 Lorenz Meier <lm@inf.ethz.ch>
+ *   Copyright (C) 2012-2013 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,38 +31,35 @@
  *
  ****************************************************************************/
 
-/*
- * @file flow_speed_control_params.h
- * 
- * Parameters for speed controller
+/**
+ * @file navigation_capabilities.h
+ *
+ * Definition of navigation capabilities uORB topic.
  */
 
-#include <systemlib/param/param.h>
+#ifndef TOPIC_NAVIGATION_CAPABILITIES_H_
+#define TOPIC_NAVIGATION_CAPABILITIES_H_
 
-struct flow_speed_control_params {
-	float speed_p;
-	float limit_pitch;
-	float limit_roll;
-	float trim_roll;
-	float trim_pitch;
-};
+#include "../uORB.h"
+#include <stdint.h>
 
-struct flow_speed_control_param_handles {
-	param_t speed_p;
-	param_t limit_pitch;
-	param_t limit_roll;
-	param_t trim_roll;
-	param_t trim_pitch;
+/**
+ * @addtogroup topics
+ * @{
+ */
+
+/**
+ * Airspeed
+ */
+struct navigation_capabilities_s {
+    float turn_distance;    /**< the optimal distance to a waypoint to switch to the next */
 };
 
 /**
- * Initialize all parameter handles and values
- *
+ * @}
  */
-int parameters_init(struct flow_speed_control_param_handles *h);
 
-/**
- * Update all parameters
- *
- */
-int parameters_update(const struct flow_speed_control_param_handles *h, struct flow_speed_control_params *p);
+/* register this as object request broker structure */
+ORB_DECLARE(navigation_capabilities);
+
+#endif

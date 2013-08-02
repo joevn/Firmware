@@ -1,8 +1,9 @@
 /****************************************************************************
  *
- *   Copyright (C) 2008-2013 PX4 Development Team. All rights reserved.
- *   Author: Samuel Zihlmann <samuezih@ee.ethz.ch>
- *   		 Lorenz Meier <lm@inf.ethz.ch>
+ *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Author: @author Thomas Gubler <thomasgubler@student.ethz.ch>
+ *           @author Julian Oes <joes@student.ethz.ch>
+ *           @author Lorenz Meier <lm@inf.ethz.ch>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,68 +34,51 @@
  *
  ****************************************************************************/
 
-/*
- * @file flow_position_control_params.h
- * 
- * Parameters for position controller
+/**
+ * @file vehicle_global_position_setpoint.h
+ * Definition of the global WGS84 position setpoint uORB topic.
  */
 
-#include <systemlib/param/param.h>
+#ifndef TOPIC_VEHICLE_GLOBAL_POSITION_SETPOINT_H_
+#define TOPIC_VEHICLE_GLOBAL_POSITION_SETPOINT_H_
 
-struct flow_position_control_params {
-	float pos_p;
-	float pos_d;
-	float height_p;
-	float height_i;
-	float height_d;
-	float height_rate;
-	float height_min;
-	float height_max;
-	float thrust_feedforward;
-	float limit_speed_x;
-	float limit_speed_y;
-	float limit_height_error;
-	float limit_thrust_int;
-	float limit_thrust_upper;
-	float limit_thrust_lower;
-	float limit_yaw_step;
-	float manual_threshold;
-	float rc_scale_pitch;
-	float rc_scale_roll;
-	float rc_scale_yaw;
-};
+#include <stdint.h>
+#include <stdbool.h>
+#include "../uORB.h"
+#include "mission.h"
 
-struct flow_position_control_param_handles {
-	param_t pos_p;
-	param_t pos_d;
-	param_t height_p;
-	param_t height_i;
-	param_t height_d;
-	param_t height_rate;
-	param_t height_min;
-	param_t height_max;
-	param_t thrust_feedforward;
-	param_t limit_speed_x;
-	param_t limit_speed_y;
-	param_t limit_height_error;
-	param_t limit_thrust_int;
-	param_t limit_thrust_upper;
-	param_t limit_thrust_lower;
-	param_t limit_yaw_step;
-	param_t manual_threshold;
-	param_t rc_scale_pitch;
-	param_t rc_scale_roll;
-	param_t rc_scale_yaw;
+/**
+ * @addtogroup topics
+ * @{
+ */
+
+/**
+ * Global position setpoint in WGS84 coordinates.
+ *
+ * This is the position the MAV is heading towards. If it of type loiter,
+ * the MAV is circling around it with the given loiter radius in meters.
+ */
+struct vehicle_global_position_setpoint_s
+{
+	bool altitude_is_relative;	/**< true if altitude is relative from start point	*/
+	int32_t lat;			/**< latitude in degrees * 1E7				*/
+	int32_t lon;			/**< longitude in degrees * 1E7				*/
+	float altitude;			/**< altitude in meters					*/
+	float yaw;			/**< in radians NED -PI..+PI 				*/
+	float loiter_radius;		/**< loiter radius in meters, 0 for a VTOL to hover     */
+	int8_t loiter_direction;	/**< 1: positive / clockwise, -1, negative.		*/
+	enum NAV_CMD nav_cmd;		/**< true if loitering is enabled			*/
+	float param1;
+	float param2;
+	float param3;
+	float param4;
 };
 
 /**
- * Initialize all parameter handles and values
- *
+ * @}
  */
-int parameters_init(struct flow_position_control_param_handles *h);
 
-/**
- * Update all parameters
- *
- */
-int parameters_update(const struct flow_position_control_param_handles *h, struct flow_position_control_params *p);
+/* register this as object request broker structure */
+ORB_DECLARE(vehicle_global_position_setpoint);
+
+#endif

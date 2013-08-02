@@ -33,36 +33,42 @@
  *
  ****************************************************************************/
 
-/*
- * @file flow_position_estimator_params.h
- * 
- * Parameters for position estimator
+/**
+ * @file filtered_bottom_flow.h
+ * Definition of the filtered bottom flow uORB topic.
  */
 
-#include <systemlib/param/param.h>
+#ifndef TOPIC_FILTERED_BOTTOM_FLOW_H_
+#define TOPIC_FILTERED_BOTTOM_FLOW_H_
 
-struct flow_position_estimator_params {
-	float minimum_liftoff_thrust;
-	float sonar_upper_lp_threshold;
-	float sonar_lower_lp_threshold;
-	int debug;
-};
+#include <stdint.h>
+#include <stdbool.h>
+#include "../uORB.h"
 
-struct flow_position_estimator_param_handles {
-	param_t minimum_liftoff_thrust;
-	param_t sonar_upper_lp_threshold;
-	param_t sonar_lower_lp_threshold;
-	param_t debug;
+/**
+ * @addtogroup topics
+ * @{
+ */
+
+/**
+ * Filtered bottom flow in bodyframe.
+ */
+struct filtered_bottom_flow_s
+{
+	uint64_t timestamp;		/**< time of this estimate, in microseconds since system start */
+
+	float sumx;				/**< Integrated bodyframe x flow in meters					   */
+	float sumy;				/**< Integrated bodyframe y flow in meters			   		   */
+
+	float vx; 				/**< Flow bodyframe x speed, m/s							   */
+	float vy;				/**< Flow bodyframe y Speed, m/s 							   */
 };
 
 /**
- * Initialize all parameter handles and values
- *
+ * @}
  */
-int parameters_init(struct flow_position_estimator_param_handles *h);
 
-/**
- * Update all parameters
- *
- */
-int parameters_update(const struct flow_position_estimator_param_handles *h, struct flow_position_estimator_params *p);
+/* register this as object request broker structure */
+ORB_DECLARE(filtered_bottom_flow);
+
+#endif

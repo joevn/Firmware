@@ -1,6 +1,7 @@
 /****************************************************************************
  *
- *   Copyright (c) 2013 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Author: @author Lorenz Meier <lm@inf.ethz.ch>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,15 +33,45 @@
  ****************************************************************************/
 
 /**
- * @file comms.h
- * @author Simon Wilks <sjwilks@gmail.com>
- *
+ * @file optical_flow.h
+ * Definition of the optical flow uORB topic.
  */
 
+#ifndef TOPIC_OPTICAL_FLOW_H_
+#define TOPIC_OPTICAL_FLOW_H_
 
-#ifndef COMMS_H_
-#define COMMS_H
+#include <stdint.h>
+#include <stdbool.h>
+#include "../uORB.h"
 
-int open_uart(const char *device);
+/**
+ * @addtogroup topics
+ */
 
-#endif /* COMMS_H_ */
+/**
+ * Optical flow in NED body frame in SI units.
+ *
+ * @see http://en.wikipedia.org/wiki/International_System_of_Units
+ */
+struct optical_flow_s {
+
+	uint64_t timestamp;		/**< in microseconds since system start          */
+
+	int16_t flow_raw_x;		/**< flow in pixels in X direction, not rotation-compensated */
+	int16_t flow_raw_y;		/**< flow in pixels in Y direction, not rotation-compensated */
+	float flow_comp_x_m;		/**< speed over ground in meters, rotation-compensated */
+	float flow_comp_y_m;		/**< speed over ground in meters, rotation-compensated */
+	float ground_distance_m;	/**< Altitude / distance to ground in meters */
+	uint8_t	quality;		/**< Quality of the measurement, 0: bad quality, 255: maximum quality */
+	uint8_t sensor_id;		/**< id of the sensor emitting the flow value */
+
+};
+
+/**
+ * @}
+ */
+
+/* register this as object request broker structure */
+ORB_DECLARE(optical_flow);
+
+#endif

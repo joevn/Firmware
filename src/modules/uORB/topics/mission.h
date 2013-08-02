@@ -1,8 +1,9 @@
 /****************************************************************************
  *
- *   Copyright (C) 2008-2013 PX4 Development Team. All rights reserved.
- *   Author: Samuel Zihlmann <samuezih@ee.ethz.ch>
- *   		 Lorenz Meier <lm@inf.ethz.ch>
+ *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
+ *   Author: @author Thomas Gubler <thomasgubler@student.ethz.ch>
+ *           @author Julian Oes <joes@student.ethz.ch>
+ *           @author Lorenz Meier <lm@inf.ethz.ch>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,38 +34,66 @@
  *
  ****************************************************************************/
 
-/*
- * @file flow_speed_control_params.c
- * 
+/**
+ * @file mission_item.h
+ * Definition of one mission item.
  */
 
-#include "flow_speed_control_params.h"
+#ifndef TOPIC_MISSION_H_
+#define TOPIC_MISSION_H_
 
-/* controller parameters */
-PARAM_DEFINE_FLOAT(FSC_S_P, 0.1f);
-PARAM_DEFINE_FLOAT(FSC_L_PITCH, 0.4f);
-PARAM_DEFINE_FLOAT(FSC_L_ROLL, 0.4f);
+#include <stdint.h>
+#include <stdbool.h>
+#include "../uORB.h"
 
-int parameters_init(struct flow_speed_control_param_handles *h)
+/**
+ * @addtogroup topics
+ * @{
+ */
+
+enum NAV_CMD {
+	NAV_CMD_WAYPOINT = 0,
+	NAV_CMD_LOITER_TURN_COUNT,
+	NAV_CMD_LOITER_TIME_LIMIT,
+	NAV_CMD_LOITER_UNLIMITED,
+	NAV_CMD_RETURN_TO_LAUNCH,
+	NAV_CMD_LAND,
+	NAV_CMD_TAKEOFF
+};
+
+/**
+ * Global position setpoint in WGS84 coordinates.
+ *
+ * This is the position the MAV is heading towards. If it of type loiter,
+ * the MAV is circling around it with the given loiter radius in meters.
+ */
+struct mission_item_s
 {
-	/* PID parameters */
-	h->speed_p	 			=	param_find("FSC_S_P");
-	h->limit_pitch 			=	param_find("FSC_L_PITCH");
-	h->limit_roll 			=	param_find("FSC_L_ROLL");
-	h->trim_roll 			=	param_find("TRIM_ROLL");
-	h->trim_pitch 			=	param_find("TRIM_PITCH");
+	bool altitude_is_relative;	/**< true if altitude is relative from start point	*/
+	double lat;			/**< latitude in degrees * 1E7				*/
+	double lon;			/**< longitude in degrees * 1E7				*/
+	float altitude;			/**< altitude in meters					*/
+	float yaw;			/**< in radians NED -PI..+PI 				*/
+	float loiter_radius;		/**< loiter radius in meters, 0 for a VTOL to hover     */
+	uint8_t loiter_direction;	/**< 1: positive / clockwise, -1, negative.		*/
+	enum NAV_CMD nav_cmd;		/**< true if loitering is enabled			*/
+	float param1;
+	float param2;
+	float param3;
+	float param4;
+};
 
-
-	return OK;
-}
-
-int parameters_update(const struct flow_speed_control_param_handles *h, struct flow_speed_control_params *p)
+struct mission_s
 {
-	param_get(h->speed_p, &(p->speed_p));
-	param_get(h->limit_pitch, &(p->limit_pitch));
-	param_get(h->limit_roll, &(p->limit_roll));
-	param_get(h->trim_roll, &(p->trim_roll));
-	param_get(h->trim_pitch, &(p->trim_pitch));
+	struct mission_item_s *items;
+	unsigned count;
+};
 
-	return OK;
-}
+/**
+ * @}
+ */
+
+/* register this as object request broker structure */
+ORB_DECLARE(mission);
+
+#endif

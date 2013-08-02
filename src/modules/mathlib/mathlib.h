@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2013 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,61 +32,28 @@
  ****************************************************************************/
 
 /**
- * @file comms.c
- * @author Simon Wilks <sjwilks@gmail.com>
+ * @file mathlib.h
  *
+ * Common header for mathlib exports.
  */
 
-#include "comms.h"
+#ifdef __cplusplus
 
-#include <fcntl.h>
-#include <stdio.h>
-#include <sys/ioctl.h>
-#include <systemlib/err.h>
-#include <termios.h>
+#pragma once
 
-int
-open_uart(const char *device)
-{
-	/* baud rate */
-	static const speed_t speed = B19200;
+#include "math/Dcm.hpp"
+#include "math/EulerAngles.hpp"
+#include "math/Matrix.hpp"
+#include "math/Quaternion.hpp"
+#include "math/Vector.hpp"
+#include "math/Vector3.hpp"
+#include "math/Vector2f.hpp"
+#include "math/Limits.hpp"
 
-	/* open uart */
-	const int uart = open(device, O_RDWR | O_NOCTTY);
+#endif
 
-	if (uart < 0) {
-		err(1, "Error opening port: %s", device);
-	}
-	
-	/* Back up the original uart configuration to restore it after exit */	
-	int termios_state;
-	struct termios uart_config_original;
-	if ((termios_state = tcgetattr(uart, &uart_config_original)) < 0) {
-		close(uart);
-		err(1, "Error getting baudrate / termios config for %s: %d", device, termios_state);
-	}
+#ifdef CONFIG_ARCH_ARM
 
-	/* Fill the struct for the new configuration */
-	struct termios uart_config;
-	tcgetattr(uart, &uart_config);
+#include "CMSIS/Include/arm_math.h"
 
-	/* Clear ONLCR flag (which appends a CR for every LF) */
-	uart_config.c_oflag &= ~ONLCR;
-
-	/* Set baud rate */
-	if (cfsetispeed(&uart_config, speed) < 0 || cfsetospeed(&uart_config, speed) < 0) {
-		close(uart);
-		err(1, "Error setting baudrate / termios config for %s: %d (cfsetispeed, cfsetospeed)",
-			 device, termios_state);
-	}
-
-	if ((termios_state = tcsetattr(uart, TCSANOW, &uart_config)) < 0) {
-		close(uart);
-		err(1, "Error setting baudrate / termios config for %s (tcsetattr)", device);
-	}
-
-	/* Activate single wire mode */
-	ioctl(uart, TIOCSSINGLEWIRE, SER_SINGLEWIRE_ENABLED);
-
-	return uart;
-}
+#endif

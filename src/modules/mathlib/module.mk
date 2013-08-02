@@ -32,13 +32,31 @@
 ############################################################################
 
 #
-# Build the config tool.
+# Math library
 #
+SRCS		 = math/test/test.cpp \
+		   math/Vector.cpp \
+		   math/Vector2f.cpp \
+		   math/Vector3.cpp \
+		   math/EulerAngles.cpp \
+		   math/Quaternion.cpp \
+		   math/Dcm.cpp \
+		   math/Matrix.cpp \
+		   math/Limits.cpp
 
-MODULE_COMMAND	 = config
-SRCS		 = config.c
+#
+# In order to include .config we first have to save off the
+# current makefile name, since app.mk needs it.
+#
+APP_MAKEFILE	:= $(lastword $(MAKEFILE_LIST))
+-include $(TOPDIR)/.config
 
-MODULE_STACKSIZE = 4096
-
-MAXOPTIMIZATION	 = -Os
-
+ifeq ($(CONFIG_ARCH_CORTEXM4)$(CONFIG_ARCH_FPU),yy)
+INCLUDE_DIRS	+= math/arm
+SRCS		+= math/arm/Vector.cpp \
+		   math/arm/Matrix.cpp
+else
+#INCLUDE_DIRS	+= math/generic
+#SRCS		+= math/generic/Vector.cpp \
+#		   math/generic/Matrix.cpp
+endif

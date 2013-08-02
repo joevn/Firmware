@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (c) 2013 PX4 Development Team. All rights reserved.
+ *   Copyright (C) 2012 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -31,17 +31,85 @@
  *
  ****************************************************************************/
 
-/*
- * @file system_params.c
+/**
+ * @file Quaternion.hpp
  *
- * System wide parameters
+ * math quaternion lib
  */
 
-#include <nuttx/config.h>
-#include <systemlib/param/param.h>
+#pragma once
 
-// Auto-start script with index #n
-PARAM_DEFINE_INT32(SYS_AUTOSTART, 0);
+#include "Vector.hpp"
+#include "Matrix.hpp"
 
-// Automatically configure default values
-PARAM_DEFINE_INT32(SYS_AUTOCONFIG, 0);
+namespace math
+{
+
+class Dcm;
+class EulerAngles;
+
+class __EXPORT Quaternion : public Vector
+{
+public:
+
+	/**
+	 * default ctor
+	 */
+	Quaternion();
+
+	/**
+	 * ctor from floats
+	 */
+	Quaternion(float a, float b, float c, float d);
+
+	/**
+	 * ctor from data
+	 */
+	Quaternion(const float *data);
+
+	/**
+	 * ctor from Vector
+	 */
+	Quaternion(const Vector &v);
+
+	/**
+	 * ctor from EulerAngles
+	 */
+	Quaternion(const EulerAngles &euler);
+
+	/**
+	 * ctor from Dcm
+	 */
+	Quaternion(const Dcm &dcm);
+
+	/**
+	 * deep copy ctor
+	 */
+	Quaternion(const Quaternion &right);
+
+	/**
+	 * dtor
+	 */
+	virtual ~Quaternion();
+
+	/**
+	 * derivative
+	 */
+	Vector derivative(const Vector &w);
+
+	/**
+	 * accessors
+	 */
+	void setA(float a) { (*this)(0) = a; }
+	void setB(float b) { (*this)(1) = b; }
+	void setC(float c) { (*this)(2) = c; }
+	void setD(float d) { (*this)(3) = d; }
+	const float &getA() const { return (*this)(0); }
+	const float &getB() const { return (*this)(1); }
+	const float &getC() const { return (*this)(2); }
+	const float &getD() const { return (*this)(3); }
+};
+
+int __EXPORT quaternionTest();
+} // math
+

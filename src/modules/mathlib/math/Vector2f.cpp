@@ -1,8 +1,6 @@
 /****************************************************************************
  *
- *   Copyright (C) 2008-2013 PX4 Development Team. All rights reserved.
- *   Author: Samuel Zihlmann <samuezih@ee.ethz.ch>
- *   		 Lorenz Meier <lm@inf.ethz.ch>
+ *   Copyright (c) 2013 PX4 Development Team. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,40 +31,73 @@
  *
  ****************************************************************************/
 
-/*
- * @file flow_position_estimator_params.c
- * 
- * Parameters for position estimator
+/**
+ * @file Vector2f.cpp
+ *
+ * math vector
  */
 
-#include "flow_position_estimator_params.h"
+#include "test/test.hpp"
 
-/* Extended Kalman Filter covariances */
+#include "Vector2f.hpp"
 
-/* controller parameters */
-PARAM_DEFINE_FLOAT(FPE_LO_THRUST, 0.4f);
-PARAM_DEFINE_FLOAT(FPE_SONAR_LP_U, 0.5f);
-PARAM_DEFINE_FLOAT(FPE_SONAR_LP_L, 0.2f);
-PARAM_DEFINE_INT32(FPE_DEBUG, 0);
-
-
-int parameters_init(struct flow_position_estimator_param_handles *h)
+namespace math
 {
-	/* PID parameters */
-	h->minimum_liftoff_thrust	=	param_find("FPE_LO_THRUST");
-	h->sonar_upper_lp_threshold	=	param_find("FPE_SONAR_LP_U");
-	h->sonar_lower_lp_threshold	=	param_find("FPE_SONAR_LP_L");
-	h->debug					=	param_find("FPE_DEBUG");
 
-	return OK;
+Vector2f::Vector2f() :
+	Vector(2)
+{
 }
 
-int parameters_update(const struct flow_position_estimator_param_handles *h, struct flow_position_estimator_params *p)
+Vector2f::Vector2f(const Vector &right) :
+	Vector(right)
 {
-	param_get(h->minimum_liftoff_thrust, &(p->minimum_liftoff_thrust));
-	param_get(h->sonar_upper_lp_threshold, &(p->sonar_upper_lp_threshold));
-	param_get(h->sonar_lower_lp_threshold, &(p->sonar_lower_lp_threshold));
-	param_get(h->debug, &(p->debug));
-
-	return OK;
+#ifdef VECTOR_ASSERT
+	ASSERT(right.getRows() == 2);
+#endif
 }
+
+Vector2f::Vector2f(float x, float y) :
+	Vector(2)
+{
+	setX(x);
+	setY(y);
+}
+
+Vector2f::Vector2f(const float *data) :
+	Vector(2, data)
+{
+}
+
+Vector2f::~Vector2f()
+{
+}
+
+float Vector2f::cross(const Vector2f &b) const
+{
+	const Vector2f &a = *this;
+	return a(0)*b(1) - a(1)*b(0);
+}
+
+float Vector2f::operator %(const Vector2f &v) const
+{
+	return cross(v);
+}
+    
+float Vector2f::operator *(const Vector2f &v) const
+{
+    return dot(v);
+}
+
+int __EXPORT vector2fTest()
+{
+	printf("Test Vector2f\t\t: ");
+	// test float ctor
+	Vector2f v(1, 2);
+	ASSERT(equal(v(0), 1));
+	ASSERT(equal(v(1), 2));
+	printf("PASS\n");
+	return 0;
+}
+
+} // namespace math

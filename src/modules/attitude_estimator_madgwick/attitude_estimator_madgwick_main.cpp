@@ -387,7 +387,7 @@ float z_k[9];
 					//		     euler, Rot_matrix, x_aposteriori, P_aposteriori);
 					using namespace math;
 
-					Quaternion q = Quaternion(AttitudeUpdate(dt, z_k[3], z_k[4], z_k[5], z_k[0], z_k[1], z_k[2], z_k[6], z_k[7], z_k[8]));
+					Quaternion q = Quaternion(AttitudeUpdate(dt,madgwick_params.beta,madgwick_params.zeta, z_k[3], z_k[4], z_k[5], z_k[0], z_k[1], z_k[2], z_k[6], z_k[7], z_k[8]));
 					Dcm C = Dcm(q);
 					// euler update
 					EulerAngles _euler = EulerAngles(C);

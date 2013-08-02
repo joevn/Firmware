@@ -117,7 +117,7 @@ int attitude_estimator_so3_comp_main(int argc, char *argv[])
 		}
 
 		thread_should_exit = false;
-		attitude_estimator_so3_comp_task = task_spawn("attitude_estimator_so3_comp",
+		attitude_estimator_so3_comp_task = task_spawn_cmd("attitude_estimator_so3_comp",
 					      SCHED_DEFAULT,
 					      SCHED_PRIORITY_MAX - 5,
 					      12400,
@@ -139,10 +139,12 @@ int attitude_estimator_so3_comp_main(int argc, char *argv[])
 
 	if (!strcmp(argv[1], "status")) {
 		if (thread_running) {
-			printf("\tattitude_estimator_so3_comp app is running\n");
+			warnx("running");
+			exit(0);
 
 		} else {
-			printf("\tattitude_estimator_so3_comp app not started\n");
+			warnx("not started");
+			exit(1);
 		}
 
 		exit(0);

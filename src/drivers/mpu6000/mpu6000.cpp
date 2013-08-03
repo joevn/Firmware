@@ -384,12 +384,12 @@ MPU6000::init()
 	up_udelay(1000);
 
 	// SAMPLE RATE
-<<<<<<< HEAD
+
 	write_reg(MPUREG_SMPLRT_DIV, 0x00);     // Sample rate = 1000Hz    Fsample= 1Khz/(0+1) = 1000Hz
-=======
+
 	//write_reg(MPUREG_SMPLRT_DIV, 0x04);     // Sample rate = 200Hz    Fsample= 1Khz/(4+1) = 200Hz
 	_set_sample_rate(_sample_rate); // default sample rate = 200Hz
->>>>>>> upstream/master
+
 	usleep(1000);
 
 	// FS & DLPF   FS=2000 deg/s, DLPF = 20Hz (low pass filter)
